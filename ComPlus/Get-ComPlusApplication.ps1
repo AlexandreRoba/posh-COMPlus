@@ -23,20 +23,51 @@ function Get-COMPlusApplication{
 		[string[]]$Name,
 		[Parameter(Position=1, ParameterSetName='PartsSet')]
 		[ValidateNotNullOrEmpty()]
-		[string[]]$Key,
+		[guid[]]$Key,
 		[Parameter(Position=0,Mandatory=$true,ValueFromPipeline=$true,ParameterSetName='ApplicationSet')]
-		[PowerShellComPlus.Application[]]$Applications
-		
+		[PowerShellComPlus.Application[]]$Application
 	)
 	
 	$comAdmin = New-Object -ComObject "COMAdmin.COMAdminCatalog"
-	
 	$objCollection = $comAdmin.GetCollection("Applications")
 	$objCollection.Populate()
-	foreach($objapplication in $objCollection){
-		$Properties = @{Key=$objapplication.Key;Name=$objapplication.Name}
-		$Application = New-Object -TypeName PowerShellComPlus.Application -Property $Properties
-		Write-Output($Application.Name)
-	}
 	
+	if ($PsCmdlet.ParameterSetName -eq 'ApplicationSet'){
+		foreach($objapplication in $objCollection){
+			foreach($a in $Application){
+				if (($a.Key -eq $objapplication.Key) -and ($a.Name -eq $objapplication.Name)){
+					$Properties = @{Key=$objapplication.Key;Name=$objapplication.Name}
+					$ApplicationFound = New-Object -TypeName PowerShellComPlus.Application -Property $Properties
+					Write-Output($ApplicationFound)
+				}
+			}
+		}
+	}
+	else{
+		foreach($objapplication in $objCollection){
+			$hit = $false
+			foreach($n in $Name){
+				if($objapplication.Name -like $n){
+					$hit = $true
+					break
+				}
+			}
+			if($Name -and -not $hit){
+				continue
+			}
+			$hit = $false
+			foreach($k in $Key){
+				if($objapplication.Key -eq $k){
+					$hit = $true
+					break
+				}
+			}
+			if($Key -and -not $hit){
+				continue
+			}
+			$Properties = @{Key=$objapplication.Key;Name=$objapplication.Name}
+			$ApplicationFound = New-Object -TypeName PowerShellComPlus.Application -Property $Properties
+			Write-Output($ApplicationFound)
+		}
+	}
 }
