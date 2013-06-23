@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PowerShellComPlus
 {
     public class Application
     {
+        public string Name { get; set; }
+        public Guid Key { get; set; }
     }
 }
